@@ -12,7 +12,6 @@ scrape_bill_track_50
 """
 
 from argparse import RawTextHelpFormatter
-import os
 import sys
 
 from magiconfig import ArgumentParser, MagiConfigOptions

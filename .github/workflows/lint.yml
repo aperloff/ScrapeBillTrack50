@@ -1,0 +1,27 @@
+name: Lint Code
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  pylint:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        sudo apt-get install libssl-dev libcurl4-openssl-dev python3-dev
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
+    - name: Print some python and pylint information
+      run: |
+        python --version
+        pylint --version
+    - name: Analyzing the code for functionality and style
+      run: |
+        find ./ -type f -regex '.*.py$' -exec pylint {} +

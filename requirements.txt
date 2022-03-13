@@ -1,0 +1,8 @@
+###### Requirements without Version Specifiers ######
+pytest
+pylint
+magiconfig
+urllib3
+requests
+beautifulsoup4
+googlesearch-python

@@ -1,0 +1,9 @@
+# Emacs backup files
+*~%
+
+# Other
+*.log
+*.DS_Store
+*.sublime-*
+*.egg-info
+__pycache__
