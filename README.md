@@ -79,9 +79,12 @@ Required dependencies:
   - `Python 3`
   - [`magiconfig`](https://pypi.org/project/magiconfig/) ([GitHub](https://github.com/kpedro88/magiconfig/)): Used to read Python configuration files.
     - Can be installed using the command `pip3 install --no-cache-dir magiconfig`
-  googlesearch-python
-  urllib3
-  beautifulsoup4
+  - [`googlesearch-python`](https://pypi.org/project/googlesearch-python/) ([GitHub](https://github.com/Nv7-GitHub/googlesearch)): Used to search [Google](https://www.google.com/) for the correct [Bill Track 50](https://www.billtrack50.com/) webpage
+    - Can be installed using the command `pip3 install --no-cache-dir googlesearch-python`
+  - [`urllib3`](https://urllib3.readthedocs.io/en/stable/) ([GitHub](https://github.com/urllib3/urllib3)): Used to get the HTML from a given webpage
+    - Can be installed using the command `pip3 install --no-cache-dir urllib3`
+  - [`beautifulsoup4`](https://www.crummy.com/software/BeautifulSoup/): Used to parse the HTML from a given [Bill Track 50](https://www.billtrack50.com/) webpage
+    - Can be installed using the command `pip3 install --no-cache-dir beautifulsoup4`
 
 There is a script available to make sure all of the needed dependencies are installed:
 ```bash
