@@ -81,7 +81,6 @@ Required dependencies:
     - Can be installed using the command `pip3 install --no-cache-dir magiconfig`
   googlesearch-python
   urllib3
-  requests
   beautifulsoup4
 
 There is a script available to make sure all of the needed dependencies are installed:

@@ -13,13 +13,11 @@ scrape_bill_track_50
 
 from argparse import RawTextHelpFormatter
 import sys
+import urllib
 
 from magiconfig import ArgumentParser, MagiConfigOptions
 
-
 from googlesearch import search
-import urllib
-import requests
 from bs4 import BeautifulSoup
 
 class Staffer:
@@ -75,7 +73,7 @@ class Staffer:
     def __repr__(self):
         """Return a formated string representation of the Staffer object"""
 
-        formatted_fields = ', '.join("%s: %s" % item for item in self.__dict__.items())
+        formatted_fields = ', '.join(f"{key} = {value}" for key, value in self.__dict__.items())
         return f"Staffer({formatted_fields})"
 
     def __str__(self):
@@ -120,51 +118,43 @@ def scrape_bill_track_50(argv = None):
         query = query_base + " " + legislator
         if args.debug:
             print(f"Search query: \"{query}\"")
-        search_result = search(query, num = 1, start = 0, stop = 0).__next__()
+        search_result = search(query).__next__()
         if args.debug:
             print(f"Search result url: \"{search_result}\"")
 
-        thepage = urllib.request.urlopen(search_result)
-        soup = BeautifulSoup(thepage, "html.parser")
-        legislator_name = soup.title.text.split(" | ")[0]
-        legislator_number = soup.find_all("img","d-block")[0]['src'].split('/')[-1]
-        print(f"Information for {legislator_name}:")
-        print(f"\tBill Track 50 ID: {legislator_number}")
-        print("\tSchedulers:")
+        soup = None
+        with urllib.request.urlopen(search_result) as thepage:
+            soup = BeautifulSoup(thepage, "html.parser")
 
-        staff_table = soup.find('div','tab-pane fade show','staff-tab', id='staff')
-        staff_list = staff_table.find_all('tr')
-        schedulers = []
-        for staff in staff_list:
-            fields = staff.find_all('td')
-            is_scheduler = any("Scheduler" in field for field in fields)
-            if is_scheduler:
-                schedulers.append(
-                    Staffer(name = fields[0].string,
-                            title = fields[1].string,
-                            role_description = fields[2].string,
-                            location = fields[3].string,
-                            address = fields[4].string,
-                            phone = fields[5].string,
-                            email = fields[6].string)
-                )
-                print(f"\t\t{schedulers[-1]}")
-        if len(schedulers) == 0:
-            print("\t\t<none found>")
-        print("")
+        if soup is not None:
+            legislator_name = soup.title.text.split(" | ")[0]
+            legislator_number = soup.find_all("img","d-block")[0]['src'].split('/')[-1]
+            print(f"Information for {legislator_name}:")
+            print(f"\tBill Track 50 ID: {legislator_number}")
+            print("\tSchedulers:")
+
+            staff_table = soup.find('div','tab-pane fade show','staff-tab', id='staff')
+            staff_list = staff_table.find_all('tr')
+            schedulers = []
+            for staff in staff_list:
+                fields = staff.find_all('td')
+                is_scheduler = any("Scheduler" in field for field in fields)
+                if is_scheduler:
+                    schedulers.append(
+                        Staffer(name = fields[0].string,
+                                title = fields[1].string,
+                                role_description = fields[2].string,
+                                location = fields[3].string,
+                                address = fields[4].string,
+                                phone = fields[5].string,
+                                email = fields[6].string)
+                    )
+                    print(f"\t\t{schedulers[-1]}")
+            if len(schedulers) == 0:
+                print("\t\t<none found>")
+            print("")
+        else:
+            raise RuntimeError(f"Unable to open the bill Track 50 page for {legislator}.")
 
 if __name__ == "__main__":
     scrape_bill_track_50()
-
-
-"""
-Manual
-
-import urllib
-import requests
-from bs4 import BeautifulSoup
-thepage = urllib.request.urlopen("https://www.billtrack50.com/legislatordetail/25694")
-soup = BeautifulSoup(thepage, "html.parser")
-staff_table = soup.find('div','tab-pane fade show','staff-tab', id='staff')
-
-"""

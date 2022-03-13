@@ -26,7 +26,7 @@ from shutil import which
 import pkg_resources
 
 pip_dependencies = {
-    "urllib3" : ["requests"],
+    "urllib3" : [],
     "magiconfig" : [],
     "beautifulsoup4" : [],
     "googlesearch-python" : [],
