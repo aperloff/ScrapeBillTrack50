@@ -81,6 +81,35 @@ class Staffer:
 
         return f"Staffer({self.name} | {self.title} | {self.role_description} | {self.email})"
 
+def get_schedulers_from_table(staff_list, quiet = False):
+    """From a HTML table, get the list of schedulers
+
+    Parameters
+    ----------
+    staff_list : list
+        A list of HTML table rows
+    quiet : bool
+        If Ture, silences the printouts
+    """
+
+    schedulers = []
+    for staff in staff_list:
+        fields = staff.find_all('td')
+        is_scheduler = any("Scheduler" in field for field in fields)
+        if is_scheduler:
+            schedulers.append(
+                Staffer(name = fields[0].string,
+                        title = fields[1].string,
+                        role_description = fields[2].string,
+                        location = fields[3].string,
+                        address = fields[4].string,
+                        phone = fields[5].string,
+                        email = fields[6].string)
+            )
+            if not quiet:
+                print(f"\t\t{schedulers[-1]}")
+    return schedulers
+
 def scrape_bill_track_50(argv = None):
     """The main function for this scrip
 
@@ -101,9 +130,11 @@ def scrape_bill_track_50(argv = None):
         `python3 ScrapeBillTrack50.py -C configs/assignments.py`"""
     )
     parser.add_argument("-d", "--debug", action = "store_true",
-                        help="Shows some extra information in order to debug this program (default=%(default)s)")
+                        help = "Shows some extra information in order to debug this program (default=%(default)s)")
     parser.add_argument("-l", "--legislators", nargs = "+",
                         help = "A list of names of legislators (default=%(default)s)")
+    parser.add_argument("-q", "--quiet", action = "store_true",
+                        help = "Silences the normal outputs (default=%(default)s)")
     args = parser.parse_args(args = argv)
 
     if args.debug:
@@ -113,12 +144,14 @@ def scrape_bill_track_50(argv = None):
 
     query_base = "billtrack50"
 
+    results = {}
     for legislator in args.legislators:
-        print("==========")
+        if not args.quiet:
+            print("==========")
         query = query_base + " " + legislator
         if args.debug:
             print(f"Search query: \"{query}\"")
-        search_result = search(query).__next__()
+        search_result = search(query, num_results = 1).__next__()
         if args.debug:
             print(f"Search result url: \"{search_result}\"")
 
@@ -129,32 +162,24 @@ def scrape_bill_track_50(argv = None):
         if soup is not None:
             legislator_name = soup.title.text.split(" | ")[0]
             legislator_number = soup.find_all("img","d-block")[0]['src'].split('/')[-1]
-            print(f"Information for {legislator_name}:")
-            print(f"\tBill Track 50 ID: {legislator_number}")
-            print("\tSchedulers:")
+            if not args.quiet:
+                print(f"Information for {legislator_name}:")
+                print(f"\tBill Track 50 ID: {legislator_number}")
+                print("\tSchedulers:")
 
             staff_table = soup.find('div','tab-pane fade show','staff-tab', id='staff')
             staff_list = staff_table.find_all('tr')
-            schedulers = []
-            for staff in staff_list:
-                fields = staff.find_all('td')
-                is_scheduler = any("Scheduler" in field for field in fields)
-                if is_scheduler:
-                    schedulers.append(
-                        Staffer(name = fields[0].string,
-                                title = fields[1].string,
-                                role_description = fields[2].string,
-                                location = fields[3].string,
-                                address = fields[4].string,
-                                phone = fields[5].string,
-                                email = fields[6].string)
-                    )
-                    print(f"\t\t{schedulers[-1]}")
+            schedulers = get_schedulers_from_table(staff_list, quiet = args.quiet)
             if len(schedulers) == 0:
-                print("\t\t<none found>")
-            print("")
+                if not args.quiet:
+                    print("\t\t<none found>")
+            if not args.quiet:
+                print("")
+            results[legislator] = schedulers
         else:
             raise RuntimeError(f"Unable to open the bill Track 50 page for {legislator}.")
+
+        return results
 
 if __name__ == "__main__":
     scrape_bill_track_50()
